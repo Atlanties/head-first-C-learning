@@ -136,6 +136,13 @@ close(fd[1]);
 
 - signal action is a struct
 ```c
+/*
+struct sigaction {
+    void     (*sa_handler)(int); // pointer towards signal handle function
+    sigset_t sa_mask;            // the masked signals when executing handle function
+    int      sa_flags;           // flags for adjust signal processing 
+};
+*/
 // create new action
 struct sigaction action;
 // handler
