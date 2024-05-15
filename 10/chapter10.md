@@ -172,11 +172,11 @@ sigaction(signal_no, &new_action, &old_action);
 // example:
 int catch_signal(int sig, void (*handler)(int)){
 
-    struct sigaction sigaction;
+    struct sigaction action;
     action.sa_handler = handler;
     sigemptyset(&action.sa_mask);
     action.flags = 0;
-    reteurn sigaction(sig, sigaction, NULL);
+    reteurn sigaction(sig, action, NULL);
 }
 catch_action(SIGINT, diediedie);
 ```

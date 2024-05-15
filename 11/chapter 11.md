@@ -113,6 +113,14 @@ if (send(connect_d, msg, strlen(msg), 0) == -1)
 - When any port is bind to socket, OS won't allow any program bind it again in **30s**.
 - By setting reuse , we can let it possible to bind in a short interval
 ```c
+/*
+int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
+sockfd: socket descriptor
+level: the level of protocal, "SOL_SOCKET"(general socket option), "IPPROTO_TCP", "IPPROTO_IP"
+optname: specific option
+optal: value point to option
+optlen: size of option value(byte)
+*/
 int reuse = 1
 if(setsockopt(listener_d, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(int)) == -1)
     error("Can't set reuse of socket!");
