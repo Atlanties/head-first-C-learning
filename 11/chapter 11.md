@@ -145,6 +145,124 @@ int n = recv(client_d, buf, n, 0);
 3. recv() will return numberes of bytes we read, error for -1, if client is end, return 0
 4. recv() may need to read several times for full information
 
+## Serves for several clients
+
+- Though we implement the ikkp server, it can only serve one client per time
+- Other client should wait for the accept() function of server to serve it
+- use multi-process to deal with it
+```c
+// the parent process only accept the socket
+// but the child processs would deal with it
+if(!fork()){
+    close(listener_d);
+    // do something
+    exit(0);
+}
+close(client_socket);
+```
+- remember to avoid unlimited processes, so it is necessary to limit the upper boundary of process number
+
+
+## How to write a client end
+
+- When a client need the following things:
+1. connect to server
+2. GET or POST command
+3. We need the host name
+4. empty line
+
+- remind that the server need BLAB four steps, the client acctually need two: connect and communication
+
+### remote port and IP
+
+- Client need to know **Both IP and Port** to communicate with server, IP can be replaced by DNS
+- first, client need to create the socket for remote server
+```c
+int s = socket(PF_INET, SOCK_STREAM, 0);
+// client need to bind the socket to remote port not local port
+// this is like accept() bind client_socket to remote client address information
+struct sockaddr_in si;
+// create a socket for 202.201.239.100 port 80
+memset(&si, 0, sizeof(si));
+si.sin_family = PF_INET;
+si.sin_addr.s_addr = inet_addr("202.201.239.100");
+si.sin_port = htons(80);
+// connect socket to remote port
+connect(s, (struct sock*)&si, sizeof(si));
+```
+- We can use DNS(Domain name system) to replace the IP as well, DNS is just like a contact which can translate domain name into IP
+```c
+#include<netdb.h>
+/*
+struct addrinfo {
+    int              ai_flags;      // options for adress information
+    int              ai_family;     // address family, AF_INET`（IPv4）or `AF_INET6`（IPv6）
+    int              ai_socktype;   // socket_type, SOCK_STREAM`（TCP) or `SOCK_DGRAM`（UDP）
+    int              ai_protocol;   // protocal type, 0 refers to choose automatically
+    socklen_t        ai_addrlen;    // socket address struct length
+    struct sockaddr *ai_addr;       // pointer to sockaddr struct
+    char            *ai_canonname;  // when set, it contains the official name of host
+    struct addrinfo *ai_next;       // next addrinfo pointer, forms a link tabel
+};
+*/
+struct addrinfo *res;
+struct addrinfo hints;
+memeset(&hints, 0, sizeoff(hints));
+// PF_UNSPEC allows getaddrinfo() return both (AF_INET) and (AF_INET6) addrinfo
+// users can choose one to use, as it returns a link table
+hints.ai_family = PF_UNSPEC;
+hints.ai_sockettype = SOCK_STREAM;
+/*
+int getaddrinfo(const char *node, const char *service,
+                const struct addrinfo *hints,
+                struct addrinfo **res);
+node: donamin name, string
+services: port number or service name("80" or "http"), string
+hints: pointer to addrinfo, use to specify the details of addrinfo we need
+res: pointer to pointer of addrinfo, pointer to the result link table of addrinfo
+*/
+getaddrinfo("www.oreilly.com", "80", &hints, &res);
+// create socket
+int s = socket(res->ai_family, res->ai_socktype, res->ai_protocal);
+connect(s, res->ai_addr, res->ai_addr_len);
+freeaddrinfo(res);
+```
+
+### About HTTP
+
+- Protocol is something that we need to do some standard talk before establish the communication
+- When using HTTP to do socket communication, we need to do the followings:
+1. send a format-right request to host
+2. start receive information
+3. format-right means a request include request line head and an empty line
+
+```c
+int main(int argc, char* argv[])
+{
+    int socket;
+    socket = open_socket("en.wikipedia.org", "80");
+    char buf[255];
+    // request line
+    sprintf(buf, "GET /wiki/%s http/1.1\r\n", argv[1]);
+    say(socket, buf);
+    // request head and empty line '\r\n'
+    say(socket, "Host: en.wikipedia.org\r\n\r\n");
+    char rec[256];
+    int bytesRcvd = recv(socket, rec, 255, 0);
+    while(bytesRcvd)
+    {
+        if(bytesRcvd == -1)
+            error("Can't read from server");
+        rec[bytesRcvd] = '\0';
+        printf("%s", rec);
+        bytesRcvd = recv(socket, rec, 255, 0);
+    }
+
+    close(socket);
+    return 0;
+}
+```
+
 
 
 
