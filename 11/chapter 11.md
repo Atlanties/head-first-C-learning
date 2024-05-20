@@ -234,7 +234,7 @@ freeaddrinfo(res);
 - When using HTTP to do socket communication, we need to do the followings:
 1. send a format-right request to host
 2. start receive information
-3. format-right means a request include request line head and an empty line
+3. format-right means a request include request line header and an empty line
 
 ```c
 int main(int argc, char* argv[])
@@ -245,7 +245,7 @@ int main(int argc, char* argv[])
     // request line
     sprintf(buf, "GET /wiki/%s http/1.1\r\n", argv[1]);
     say(socket, buf);
-    // request head and empty line '\r\n'
+    // request header and empty line '\r\n'
     say(socket, "Host: en.wikipedia.org\r\n\r\n");
     char rec[256];
     int bytesRcvd = recv(socket, rec, 255, 0);
